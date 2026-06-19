@@ -1,0 +1,82 @@
+---
+import Layout from "../../layouts/Layout.astro"
+---
+
+<Layout>
+
+
+    <div class="loader-container">
+        <div class="spinner"></div>
+        <h2>Configurando tu cuenta de inversión...</h2>
+        <p>Por favor, no cierres esta ventana.</p>
+    </div>
+
+    
+
+</Layout>
+<style>
+        .loader-container {
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 215, 0, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border-left-color: #FFD700; /* Color Oro */
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+        import { createClient } from '@supabase/supabase-js';
+
+        const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        async function procesarLogin() {
+            // 1. Supabase extrae automáticamente los tokens de la URL (el hash que manda Google)
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (error || !session) {
+                console.error("Error al obtener la sesión:", error);
+                window.location.href = '/?error=auth_failed';
+                return;
+            }
+
+            const usuarioId = session.user.id;
+
+            try {
+                // 2. Llamamos a nuestra API interna para verificar/crear el perfil y la wallet
+                const respuesta = await fetch('/api/crear-billetera', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuarioId })
+                });
+
+                const resultado = await respuesta.json();
+
+                if (resultado.success || respuesta.status === 200) {
+                    // 3. ¡Todo listo! Redirigimos al usuario al panel principal de la app
+                    window.location.href = '/dashboard';
+                } else {
+                    // Si el perfil ya existía (un usuario viejo que vuelve a iniciar sesión), 
+                    // el endpoint dará un error controlado, pero igual lo dejamos pasar al dashboard.
+                    if (resultado.error && resultado.error.includes("duplicate key")) {
+                        window.location.href = '/dashboard';
+                    } else {
+                        throw new Error(resultado.error);
+                    }
+                }
+            } catch (err) {
+                console.error("Error en el flujo de inicialización:", err);
+                window.location.href = '/dashboard'; // Ajusta según prefieras manejar fallos catastróficos
+            }
+        }
+
+        // Ejecutar la función al cargar la página
+        procesarLogin();
+    </script>

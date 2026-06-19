@@ -1,0 +1,101 @@
+---
+
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width user-scalable=no initial-scale=1.0 maximum-scale=1.0 minimum-scale=1.0" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+
+		<!-- Open Graph / Facebook / WhatsApp -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://tu-dominio.com/" />
+		<meta property="og:title" content="EarnCash - Gana dinero en línea" />
+		<meta property="og:description" content="Descripción breve y atractiva de tu sitio web para redes sociales y WhatsApp." />
+		<meta property="og:image" content="https://tu-dominio.com/og-image.jpg" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630"/>
+		
+		<!-- Twitter / X -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="EarnCash - Gana dinero en línea" />
+		<meta name="twitter:description" content="Descripción breve y atractiva de tu sitio web para redes sociales y WhatsApp." />
+		<meta name="twitter:image" content="https://tu-dominio.com/og-image.jpg" />
+	</head>
+	<body>
+		<div class="overlay"></div>
+		<main>
+			<slot></slot>
+		</main>
+	</body>
+</html>
+<style is:global>
+	:root{
+		--primary:#FFD700;
+		--secondary:#F0A500;
+		--danger:rgb(255, 60, 0);
+		--success:rgb(21, 184, 13);
+		--light:#E0E0E0;
+		--dark:#1A1A1A;
+	}
+	*{
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+		border:none;
+		outline:none;
+		text-decoration:none;
+		list-style:none;
+	}
+	body{
+		background-image: url(/bg.webp);
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		color: var(--light);
+		font-family: sans-serif;
+	
+	}
+	
+	button{
+		background: linear-gradient(135deg, var(--secondary), var(--primary)); /* Degradado Oro */
+		color: var(--dark); /* Texto oscuro para contraste */
+		font-size: 1rem;
+		font-weight: bold;
+		padding: 16px;
+		border: none;
+		border-radius: 12px; /* Bordes suaves modernos */
+		cursor: pointer;
+		box-shadow: 0 4px 15px rgba(240, 165, 0, 0.3); /* Brillo sutil inferior */
+		transition: transform 0.2s;
+		display:flex;
+		flex-flow: row nowrap;
+		justify-content:center;
+		align-items:center;
+		gap:.5rem;
+		height:max-content;
+		width:max-content;
+	}
+	button:active{
+		transform: scale(0.98);
+	}
+	.overlay {
+		position: absolute;
+		top: 0; left: 0; width: 100%; height: 100%;
+		background-color: rgba(0, 0, 0, 0.65);
+		z-index: 1;
+	}
+	main,header,footer{
+		position: relative;
+		z-index:2;
+	}
+	@media (min-width: 768px) {
+		button{
+			width:max-content;
+		}
+	}
+</style>
