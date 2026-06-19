@@ -8,6 +8,10 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
       <!-- TARJETA DE DEPOSITO -->
       <div class="card deposit-card">
   <h3>Depositar Fondos (USDT BEP-20)</h3>
+  <div class="debug-user-container" style="margin-bottom: 12px; font-size: 0.8rem; color: #71717a;">
+    <span>ID de Usuario Activo: </span>
+    <strong id="debug-user-id" style="font-family: monospace; color: #a1a1aa;">Cargando ID...</strong>
+  </div>
   <p class="info-text">Envía USDT a tu dirección personal de depósito. Los fondos se acreditarán automáticamente en unos minutos.</p>
   
   <div class="deposit-address-container">
@@ -273,7 +277,23 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
     const qrImg = document.getElementById('deposit-qr') as HTMLImageElement;
     const qrPlaceholder = document.getElementById('qr-placeholder');
     const btnCopy = document.getElementById('btn-copy-address');
+    const debugUserText = document.getElementById('debug-user-id');
 
+    try {
+      // 1. Obtener la sesión del usuario conectado
+      const { data: { session } } = await supabaseCliente.auth.getSession();
+      
+      if (!session) {
+        if (debugUserText) debugUserText.innerText = "Sin sesión activa";
+        if (addressText) addressText.innerText = "Inicia sesión para ver tu dirección.";
+        return;
+      }
+
+      // 🌟 Pintamos el ID del usuario en pantalla de inmediato
+      if (debugUserText) {
+        debugUserText.innerText = session.user.id;
+      }
+      
     if (!addressText || !qrImg || !qrPlaceholder) return;
 
     try {
