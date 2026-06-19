@@ -48,8 +48,7 @@ export const POST: APIRoute = async ({ request }) => {
         usuario_id: usuarioId,
         monto_virtual: amount,
         tipo: 'retiro',
-        estado: 'pendiente', // Cambiará a 'completado' cuando envíes los USDT por blockchain
-        tx_hash: `Aprobación Pendiente -> Destino: ${address}`
+        estado: 'pendiente', // Cambiará a 'completado' cuando envíes los USDT por blockchain`
       });
 
     if (txError) throw txError;
