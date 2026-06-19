@@ -5,6 +5,29 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
 
 <Layout>
     <div class="wallet-grid">
+      <!-- TARJETA DE DEPOSITO -->
+      <div class="card deposit-card">
+  <h3>Depositar Fondos (USDT BEP-20)</h3>
+  <p class="info-text">Envía USDT a tu dirección personal de depósito. Los fondos se acreditarán automáticamente en unos minutos.</p>
+  
+  <div class="deposit-address-container">
+    <label>Tu Dirección de Depósito:</label>
+    <div class="address-box">
+      <span id="deposit-address-text">Cargando dirección...</span>
+      <button id="btn-copy-address" title="Copiar dirección">📋</button>
+    </div>
+  </div>
+
+  <div class="qr-container">
+    <img id="deposit-qr" src="" alt="Código QR de depósito" style="display: none;" />
+    <div id="qr-placeholder" class="qr-placeholder">Generando QR...</div>
+  </div>
+
+  <div class="network-badge">
+    ⚠️ Red requerida: <strong>BNB Smart Chain (BEP20)</strong>
+  </div>
+</div>
+<!-- FIN TARJETA DE DEPOSITO -->
         <!-- TARJETA DE RETIRO -->
         <div class="card withdraw-card">
             <h3>Retirar Fondos (USDT BEP-20)</h3>
@@ -103,6 +126,90 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
 }
 .msg-success { color: #51cf66; }
 .msg-error { color: #ff6b6b; }
+
+/**estilos de deposit card */
+.deposit-card {
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  padding: 24px;
+}
+.info-text {
+  font-size: 0.9rem;
+  color: #a1a1aa;
+  margin-bottom: 20px;
+}
+.deposit-address-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.deposit-address-container label {
+  font-size: 0.85rem;
+  color: #71717a;
+}
+.address-box {
+  display: flex;
+  align-items: center;
+  background: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 6px;
+  padding: 10px 14px;
+  gap: 10px;
+}
+#deposit-address-text {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #f4f4f5;
+  word-break: break-all;
+  flex-grow: 1;
+}
+#btn-copy-address {
+  background: #27272a;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#btn-copy-address:hover {
+  background: #3f3f46;
+}
+.qr-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+#deposit-qr {
+  width: 160px;
+  height: 160px;
+  border: 6px solid white;
+  border-radius: 6px;
+}
+.qr-placeholder {
+  width: 160px;
+  height: 160px;
+  background: #09090b;
+  border: 1px dashed #27272a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #52525b;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+.network-badge {
+  background: rgba(234, 179, 8, 0.1);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  text-align: center;
+}
 </style>
 <script>
     // Lógica para enviar la solicitud de retiro
@@ -148,4 +255,59 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
       btn.innerText = "Solicitar Retiro";
     }
   });
+</script>
+
+<script>
+  async function cargarInterfazDeposito() {
+    const addressText = document.getElementById('deposit-address-text');
+    const qrImg = document.getElementById('deposit-qr') as HTMLImageElement;
+    const qrPlaceholder = document.getElementById('qr-placeholder');
+    const btnCopy = document.getElementById('btn-copy-address');
+
+    if (!addressText || !qrImg || !qrPlaceholder) return;
+
+    try {
+      // 1. Obtener la sesión del usuario conectado
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // 2. Consultar directamente a la tabla la billetera pública asignada
+      const { data: walletData, error } = await supabase
+        .from('billeteras_deposito')
+        .select('direccion_publica')
+        .eq('usuario_id', session.user.id)
+        .single();
+
+      if (error || !walletData) {
+        addressText.innerText = "Error al obtener dirección.";
+        return;
+      }
+
+      const walletAddress = walletData.direccion_publica;
+
+      // 3. Pintar la dirección en el HTML
+      addressText.innerText = walletAddress;
+
+      // 4. Generar el código QR con el servicio público
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
+      qrImg.onload = () => {
+        qrPlaceholder.style.display = 'none';
+        qrImg.style.display = 'block';
+      };
+
+      // 5. Configurar el botón de copiar
+      btnCopy?.addEventListener('click', () => {
+        navigator.clipboard.writeText(walletAddress);
+        const originalText = btnCopy.innerText;
+        btnCopy.innerText = "✅";
+        setTimeout(() => { btnCopy.innerText = originalText; }, 2000);
+      });
+
+    } catch (err) {
+      console.error("Error cargando el módulo de depósito:", err);
+    }
+  }
+
+  // Ejecutamos la función de carga al iniciar
+  cargarInterfazDeposito();
 </script>
