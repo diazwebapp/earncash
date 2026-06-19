@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import HistorialTransacciones from "../../components/HistorialTransacciones.astro";
 ---
 
 <Layout>
@@ -45,6 +46,11 @@ import Layout from "../../layouts/Layout.astro";
             <p id="withdraw-msg" class="msg-box"></p>
         </div>
         <!-- FIN TARJETA DE RETIRO -->
+    </div>
+
+    <div class="transacciones">
+        <h2>Últimas Transacciones</h2>
+        <HistorialTransacciones/>
     </div>
 </Layout>
 <style>

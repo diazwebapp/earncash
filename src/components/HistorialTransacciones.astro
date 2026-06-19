@@ -1,0 +1,119 @@
+---
+// Aquí puedes añadir propiedades si lo necesitas, por ahora lo manejaremos dinámico por cliente
+---
+
+<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-4xl mx-auto mt-8">
+  <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+    📋 Historial de Transacciones
+  </h2>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm text-zinc-400">
+      <thead class="text-xs uppercase bg-zinc-950 text-zinc-300 border-b border-zinc-800">
+        <tr>
+          <th scope="col" class="px-6 py-3">Tipo</th>
+          <th scope="col" class="px-6 py-3">Monto (CASH)</th>
+          <th scope="col" class="px-6 py-3">Estado</th>
+          <th scope="col" class="px-6 py-3">Blockchain Hash</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-transacciones-body">
+        <tr class="border-b border-zinc-800">
+          <td colspan="4" class="px-6 py-4 text-center text-zinc-500 animate-pulse">
+            Cargando transacciones...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  // Cliente público para el navegador (no pasa nada por dejar estas variables visibles en el cliente)
+  // Astro las expone de forma segura si usas PUBLIC_
+  const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL) as string;
+  const supabaseAnonKey = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "") as string;
+  
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+  async function cargarHistorial() {
+    const tbody = document.getElementById('tabla-transacciones-body');
+    if (!tbody) return;
+
+    try {
+      // Obtener la sesión actual del cliente para sacar el token de acceso
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-4 text-center text-red-400">Inicia sesión para ver tu historial.</td>
+          </tr>`;
+        return;
+      }
+
+      // Hacer la petición a nuestra nueva API pasándole el token
+      const res = await fetch('/api/obtener-transacciones', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Error al obtener datos');
+      }
+
+      const txs = data.transacciones;
+
+      if (txs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-4 text-center text-zinc-500">Aún no registras ninguna transacción.</td>
+          </tr>`;
+        return;
+      }
+
+      // Renderizar las filas dinámicamente con estilos de Badge para el estado
+      tbody.innerHTML = txs.map((tx: any) => {
+        // Estilos dinámicos para los estados (pendiente, completado, rechazado)
+        let statusClass = 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20';
+        if (tx.estado === 'completado') statusClass = 'bg-green-500/10 text-green-400 border border-green-500/20';
+        if (tx.estado === 'rechazado') statusClass = 'bg-red-500/10 text-red-400 border border-red-500/20';
+
+        // Formatear el Hash de blockchain para que no rompa el diseño si es largo
+        const hashCorto = tx.hash_blockchain 
+          ? `${tx.hash_blockchain.substring(0, 6)}...${tx.hash_blockchain.substring(tx.hash_blockchain.length - 4)}`
+          : '—';
+
+        return `
+          <tr class="border-b border-zinc-800 hover:bg-zinc-800/30 transition-colors">
+            <td class="px-6 py-4 font-medium text-white capitalize">${tx.tipo}</td>
+            <td class="px-6 py-4 text-white font-mono">${parseFloat(tx.monto_virtual).toFixed(2)} CASH</td>
+            <td class="px-6 py-4">
+              <span class="px-2.5 py-1 text-xs rounded-full font-medium ${statusClass}">
+                ${tx.estado || 'pendiente'}
+              </span>
+            </td>
+            <td class="px-6 py-4 font-mono text-xs text-zinc-500" title="${tx.hash_blockchain || ''}">
+              ${tx.hash_blockchain ? `<a href="https://bscscan.com/tx/${tx.hash_blockchain}" target="_blank" class="text-indigo-400 hover:underline">${hashCorto}</a>` : hashCorto}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="px-6 py-4 text-center text-red-500">Error al cargar el historial.</td>
+        </tr>`;
+    }
+  }
+
+  // Ejecutar la carga inmediatamente cuando el componente se monta en el DOM
+  cargarHistorial();
+</script>
