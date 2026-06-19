@@ -258,6 +258,16 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
 </script>
 
 <script>
+  // 1. Importamos la función para crear el cliente de Supabase en el cliente
+  import { createClient } from '@supabase/supabase-js';
+
+  // 2. Inicializamos el cliente usando las variables de entorno públicas
+  // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+  const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
+
   async function cargarInterfazDeposito() {
     const addressText = document.getElementById('deposit-address-text');
     const qrImg = document.getElementById('deposit-qr') as HTMLImageElement;
@@ -267,35 +277,39 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
     if (!addressText || !qrImg || !qrPlaceholder) return;
 
     try {
-      // 1. Obtener la sesión del usuario conectado
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      // 3. Usamos la instancia local 'supabaseCliente' para obtener la sesión
+      const { data: { session } } = await supabaseCliente.auth.getSession();
+      if (!session) {
+        addressText.innerText = "Inicia sesión para ver tu dirección.";
+        return;
+      }
 
-      // 2. Consultar directamente a la tabla la billetera pública asignada
-      const { data: walletData, error } = await supabase
+      // 4. Consultamos la billetera asignada
+      const { data: walletData, error } = await supabaseCliente
         .from('billeteras_deposito')
         .select('direccion_publica')
         .eq('usuario_id', session.user.id)
         .single();
 
       if (error || !walletData) {
+        console.error("Error de Supabase:", error);
         addressText.innerText = "Error al obtener dirección.";
         return;
       }
 
       const walletAddress = walletData.direccion_publica;
 
-      // 3. Pintar la dirección en el HTML
+      // 5. Pintamos la dirección en el HTML
       addressText.innerText = walletAddress;
 
-      // 4. Generar el código QR con el servicio público
+      // 6. Generamos el código QR con el servicio público
       qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
       qrImg.onload = () => {
         qrPlaceholder.style.display = 'none';
         qrImg.style.display = 'block';
       };
 
-      // 5. Configurar el botón de copiar
+      // 7. Configurar el botón de copiar
       btnCopy?.addEventListener('click', () => {
         navigator.clipboard.writeText(walletAddress);
         const originalText = btnCopy.innerText;
@@ -308,6 +322,6 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
     }
   }
 
-  // Ejecutamos la función de carga al iniciar
+  // Ejecutamos la función al cargar el script en el navegador
   cargarInterfazDeposito();
 </script>
