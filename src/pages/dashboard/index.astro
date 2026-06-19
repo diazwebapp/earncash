@@ -279,20 +279,7 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
     const btnCopy = document.getElementById('btn-copy-address');
     const debugUserText = document.getElementById('debug-user-id');
 
-    try {
-      // 1. Obtener la sesión del usuario conectado
-      const { data: { session } } = await supabaseCliente.auth.getSession();
-      
-      if (!session) {
-        if (debugUserText) debugUserText.innerText = "Sin sesión activa";
-        if (addressText) addressText.innerText = "Inicia sesión para ver tu dirección.";
-        return;
-      }
-
-      // 🌟 Pintamos el ID del usuario en pantalla de inmediato
-      if (debugUserText) {
-        debugUserText.innerText = session.user.id;
-      }
+    
       
     if (!addressText || !qrImg || !qrPlaceholder) return;
 
@@ -303,7 +290,10 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
         addressText.innerText = "Inicia sesión para ver tu dirección.";
         return;
       }
-
+// 🌟 Pintamos el ID del usuario en pantalla de inmediato
+      if (debugUserText) {
+        debugUserText.innerText = session.user.id;
+      }
       // 4. Consultamos la billetera asignada
       const { data: walletData, error } = await supabaseCliente
         .from('billeteras_deposito')
