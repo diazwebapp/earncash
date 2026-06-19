@@ -289,7 +289,7 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
         .from('billeteras_deposito')
         .select('direccion_publica')
         .eq('usuario_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error || !walletData) {
         console.error("Error de Supabase:", error);
