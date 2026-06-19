@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { ethers } from 'ethers';
+// Usa el prefijo nativo de Node para asegurar que traiga el módulo correcto
+import crypto from 'crypto';
+
 
 // Dirección oficial del contrato inteligente de USDT en la red BNB Chain (BEP-20)
 const USDT_CONTRACT_ADDRESS = '0x55d398326f99059fF775485246999027B3197955';
