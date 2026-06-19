@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
       .from('transacciones')
       .insert({
         usuario_id: usuarioId,
-        monto: amount,
+        monto_virtual: amount,
         tipo: 'retiro',
         estado: 'pendiente', // Cambiará a 'completado' cuando envíes los USDT por blockchain
         tx_hash: `Aprobación Pendiente -> Destino: ${address}`
