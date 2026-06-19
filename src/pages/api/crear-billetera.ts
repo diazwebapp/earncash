@@ -45,14 +45,37 @@ export const POST: APIRoute = async ({ request }) => {
     // 2. ENCRIPTAR LA LLAVE PRIVADA
     const llaveEncriptada = encrypt(llavePrivadaPlana);
 
-    // 3. REGISTRAR EL PERFIL EN LA TABLA DE NUESTRA APP
-    // Primero creamos el perfil del usuario con saldo 0
-    const { error: perfilError } = await supabase
+    // 1. Comprobar si el perfil del usuario ya existe en Supabase
+    const { data: perfilExistente, error: checkError } = await supabase
       .from('perfiles')
-      .insert([{ id: usuarioId, balance_virtual: 0.00 }]);
+      .select('balance_virtual')
+      .eq('id', usuarioId)
+      .single();
 
-    if (perfilError) throw new Error(`Error en perfil: ${perfilError.message}`);
+    // 2. Si no existe, lo creamos inicialmente con balance 0.00
+    if (!perfilExistente) {
+      const { error: insertError } = await supabase
+        .from('perfiles')
+        .insert({ id: usuarioId, balance_virtual: 0.00 });
+        
+      if (insertError) throw insertError;
+      console.log("✅ Perfil nuevo creado con éxito.");
+    } else {
+      console.log("ℹ️ El perfil ya existía. Conservando balance de:", perfilExistente.balance_virtual);
+    }
+const { data: billeteraExistente } = await supabase
+  .from('billeteras_deposito')
+  .select('*')
+  .eq('usuario_id', usuarioId)
+  .single();
 
+if (billeteraExistente) {
+  return new Response(JSON.stringify({ 
+    success: true, 
+    mensaje: "Billetera ya asignada", 
+    billetera: billeteraExistente 
+  }), { status: 200 });
+}
     // 4. GUARDAR LA BILLETERA DE DEPÓSITO ASOCIADA
     const { error: walletError } = await supabase
       .from('billeteras_deposito')
