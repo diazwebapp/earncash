@@ -290,25 +290,29 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
         .select('direccion_publica')
         .eq('usuario_id', session.user.id)
         .maybeSingle();
-
-      if (error || !walletData) {
+// 2. Si hay un error real de conexión/permisos, lo reportamos
+      if (error) {
         console.error("Error de Supabase:", error);
-        addressText.innerText = "Error al obtener dirección.";
+        addressText.innerText = "Error al conectar con el servidor.";
         return;
       }
 
-      const walletAddress = walletData.direccion_publica;
+      // 3. Si la respuesta es null (0 filas encontradas), significa que no tiene billetera
+      if (!walletData) {
+        addressText.innerText = "No tienes una dirección asignada. Por favor, recarga o contacta soporte.";
+        qrPlaceholder.innerText = "Sin dirección";
+        return;
+      }
 
-      // 5. Pintamos la dirección en el HTML
+      // 4. Si todo está correcto, pintamos la wallet y el QR (Tus líneas actuales)
+      const walletAddress = walletData.direccion_publica;
       addressText.innerText = walletAddress;
 
-      // 6. Generamos el código QR con el servicio público
       qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
       qrImg.onload = () => {
         qrPlaceholder.style.display = 'none';
         qrImg.style.display = 'block';
       };
-
       // 7. Configurar el botón de copiar
       btnCopy?.addEventListener('click', () => {
         navigator.clipboard.writeText(walletAddress);
