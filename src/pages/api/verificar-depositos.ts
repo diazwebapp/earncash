@@ -37,25 +37,64 @@ export const GET: APIRoute = async () => {
 
     console.log(`🔎 Escaneando balances para ${billeteras.length} billeteras...`);
 
-    // D. Recorrer cada billetera y revisar su saldo en la blockchain
+    // 🌟 1. Arreglo para almacenar el reporte detallado que irá a la pantalla
+    const detallesEscaneo = [];
+
     for (const wallet of billeteras) {
-      // Consultamos el balance crudo (en unidades wei)
       const balanceCrudo = await usdtContrato.balanceOf(wallet.direccion_publica);
-      
-      // Convertimos el balance usando los 18 decimales del token para leerlo en formato legible (ej. "10.5")
       const balanceUSDT = parseFloat(ethers.formatUnits(balanceCrudo, 18));
 
+      // Guardamos la información básica de lo que encontramos en la blockchain
+      const registro = {
+        usuario_id: wallet.usuario_id,
+        direccion: wallet.direccion_publica,
+        balance_blockchain_usdt: balanceUSDT,
+        acreditado: false
+      };
+
       if (balanceUSDT > 0) {
-        console.log(`💰 ¡Se detectaron ${balanceUSDT} USDT en la wallet de usuario ${wallet.usuario_id}!`);
-        
-        // TODO: Aquí añadiremos en el próximo paso la lógica de:
-        // 1. Sumar balance_virtual en perfiles.
-        // 2. Crear fila en transacciones.
-        // 3. Barrer los fondos a tu cuenta maestra.
+        // --- Lógica de base de datos que ya armamos ---
+        const { data: perfil } = await supabase
+          .from('perfiles')
+          .select('balance_virtual')
+          .eq('id', wallet.usuario_id)
+          .single();
+
+        const nuevoBalanceVirtual = (perfil?.balance_virtual || 0) + balanceUSDT;
+
+        await supabase
+          .from('perfiles')
+          .update({ balance_virtual: nuevoBalanceVirtual })
+          .eq('id', wallet.usuario_id);
+
+        await supabase
+          .from('transacciones')
+          .insert({
+            usuario_id: wallet.usuario_id,
+            tipo: 'deposito',
+            monto: balanceUSDT,
+            estado: 'completado',
+            hash_blockchain: `TESTNET_TX_${Date.now()}`
+          });
+        // ----------------------------------------------
+
+        registro.acreditado = true;
       }
+
+      // 🌟 2. Empujamos el registro del usuario al reporte
+      detallesEscaneo.push(registro);
     }
 
-    return new Response(JSON.stringify({ success: true, message: "Escaneo completado con éxito." }), { status: 200 });
+    // 🌟 3. Devolvemos el reporte completo en el JSON de respuesta
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: "Escaneo completado con éxito.",
+        total_billeteras_escaneadas: detallesEscaneo.length,
+        resultados: detallesEscaneo // 🚀 Aquí verás los montos en la pantalla
+      }), 
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
 
   } catch (error: any) {
     console.error("❌ Error en el verificador:", error.message);
