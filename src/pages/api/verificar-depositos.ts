@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
-import { ethers } from 'ethers';
+import { ethers, getAddress } from 'ethers';
 
 // 1. Inicializamos Supabase con la Service Role Key para poder actualizar saldos sin restricciones de RLS
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
@@ -9,8 +9,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // 2. Configuración de Web3 para la Testnet
 const RPC_URL = import.meta.env.RPC_PROVIDER_URL || "https://data-seed-prebsc-1-s1.binance.org:8545/";
-const USDT_CONTRACT = import.meta.env.USDT_CONTRACT_ADDRESS || "0x337610d27c682E347C9cD60BD4b3b107c9d34dDd";
-
+const USDT_CONTRACT_RAW = import.meta.env.USDT_CONTRACT_ADDRESS || "0x337610d27c682E347C9cD60BD4b3b107c9d34dDd";
+const USDT_CONTRACT = getAddress(USDT_CONTRACT_RAW.toLowerCase()); // Convierte a formato válido seguro
 // Un ABI mínimo que solo le dice a ethers cómo consultar el balance de un Token ERC20/BEP20
 const MIN_ERC20_ABI = [
   "function balanceOf(address account) view returns (uint256)",
