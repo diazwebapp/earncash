@@ -1,22 +1,14 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { ethers } from 'ethers';
-import crypto from 'crypto';
+import CryptoJS from 'crypto-js'; // 👈 Cambiamos a crypto-js
 
-const ALGORITHM = 'aes-256-cbc';
-const IV_LENGTH = 16;
+// Traemos tu llave secreta del .env sin alterar
+const ENCRYPTION_KEY = import.meta.env.ENCRYPTION_KEY;
 
-// 🌟 SOLUCIÓN: Agarramos tu clave (sin importar si mide 33 caracteres) y la convertimos en un Buffer de 32 bytes exactos
-const contrasenaRaw = import.meta.env.ENCRYPTION_KEY || '';
-const ENCRYPTION_KEY = crypto.createHash('sha256').update(String(contrasenaRaw)).digest();
-
-function encrypt(text: string) {
-  const iv = crypto.randomBytes(IV_LENGTH);
-  // Pasamos el Buffer directo. Ya no fallará por longitud inválida.
-  const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
+function encrypt(text: string): string {
+  // Encripta de forma directa y limpia retornando una string segura
+  return CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
 }
 
 export const POST: APIRoute = async ({ request }) => {

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { ethers } from 'ethers';
-import crypto from 'crypto'; // 👈 Módulo nativo de Node.js para criptografía
+import CryptoJS from 'crypto-js'; // 👈 Cambiamos a crypto-js
 
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -13,44 +13,39 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 const RPC_URL = process.env.RPC_PROVIDER_URL || import.meta.env.RPC_PROVIDER_URL || "http://127.0.0.1:8545";
 const BILLETERA_MAESTRA = process.env.BILLETERA_MAESTRA_USDT || "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
-// Clave secreta de encriptación (Debe tener exactamente 32 caracteres para AES-256)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "tu_clave_secreta_de_32_caracteres_!"; 
-const IV_LENGTH = 16; // Para AES, el vector de inicialización siempre es 16 bytes
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || import.meta.env.ENCRYPTION_KEY ;
 
 /**
- * Función para desencriptar la clave privada extraída de Supabase
+ * Función para desencriptar usando Crypto-JS de manera limpia
  */
 function desencriptarClave(textoEncriptado: string): string {
   try {
-    // Si no contiene el separador ':', asumimos que está en texto plano
-    if (!textoEncriptado.includes(':')) {
-      return textoEncriptado;
+    // Si metiste la llave de Hardhat plana sin encriptar, la deja pasar limpia
+    if (textoEncriptado.startsWith('0x') && textoEncriptado.length === 66) {
+      return textoEncriptado.trim();
     }
 
-    const partes = textoEncriptado.split(':');
-    const iv = Buffer.from(partes.shift()!, 'hex');
-    const textoCifradoOriginal = Buffer.from(partes.join(':'), 'hex');
-    
-    // 👑 Generamos un buffer seguro de exactamente 32 bytes usando el hash de tu ENCRYPTION_KEY
-    const keyBuffer = crypto
-      .createHash('sha256')
-      .update(ENCRYPTION_KEY)
-      .digest(); // Esto genera un Buffer de 32 bytes exactos de forma matemática
-    
-    const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, iv);
-    let decrypted = decipher.update(textoCifradoOriginal);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    
-    return decrypted.toString();
+    // Desencriptamos de forma directa usando la llave del .env
+    const bytes = CryptoJS.AES.decrypt(textoEncriptado, ENCRYPTION_KEY);
+    const claveLimpia = bytes.toString(CryptoJS.enc.Utf8).trim();
+
+    if (!claveLimpia) {
+      throw new Error("El resultado del descifrado está vacío. Revisa la ENCRYPTION_KEY.");
+    }
+
+    return claveLimpia;
   } catch (err: any) {
     throw new Error(`Fallo al desencriptar la clave privada: ${err.message}`);
   }
 }
 
+// ... El resto de tu función GET se mantiene exactamente igual ...
+
 export const GET: APIRoute = async () => {
   try {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     
+    // CORRECCIÓN CRUCIAL: Seleccionamos 'llave_privada_encriptada' en vez de 'private_key'
     const { data: billeteras, error: dbError } = await supabase
       .from('billeteras_deposito')
       .select('usuario_id, direccion_publica, llave_privada_encriptada'); 
@@ -93,10 +88,16 @@ export const GET: APIRoute = async () => {
 
           const nuevoBalanceVirtual = (perfil?.balance_virtual || 0) + balanceSimulado;
 
-          // 👈 AQUÍ SE DESENCRIPTA AUTOMÁTICAMENTE LA LLAVE EXTRAÍDA
-          const clavePrivadaLimpia = desencriptarClave(wallet.llave_privada_encriptada);
+          // Extraemos del campo correcto que mapeamos de Supabase
+          const llaveCifradaDb = wallet.llave_privada_encriptada;
 
-          // Inicializamos el firmante con la clave segura en memoria
+          if (!llaveCifradaDb) {
+            throw new Error(`La billetera ${direccionNormalizada} no tiene una llave encriptada en la base de datos.`);
+          }
+
+          // Desencriptamos de forma segura en memoria
+          const clavePrivadaLimpia = desencriptarClave(llaveCifradaDb);
+
           const walletFirmante = new ethers.Wallet(clavePrivadaLimpia, provider);
           
           const balanceCrudo = await provider.getBalance(direccionNormalizada);
@@ -152,7 +153,7 @@ export const GET: APIRoute = async () => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Escaneo y barrido seguro finalizado.",
+        message: "Escaneo y barrido seguro finalizado de forma idéntica.",
         resultados: detallesEscaneo 
       }), 
       { status: 200, headers: { "Content-Type": "application/json" } }
