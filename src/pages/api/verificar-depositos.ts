@@ -10,26 +10,17 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 const RPC_URL = process.env.RPC_PROVIDER_URL || import.meta.env.RPC_PROVIDER_URL || "http://127.0.0.1:8545";
-// Cambia esto por tu dirección personal o la de la cuenta de recaudación principal
-const BILLETERA_MAESTRA = process.env.BILLETERA_MAESTRA_USDT || "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
-
-// Mapeo temporal de Claves Privadas de Hardhat vinculadas a las direcciones públicas de tus usuarios
-// NOTA: Reemplaza estas direcciones con las que tienes asignadas actualmente en tu Supabase
-const CLAVES_PRIVADAS_LOCALES: Record<string, string> = {
-  // Billetera #0 de tu consola Hardhat (Mapeada de forma matemáticamente correcta)
-  "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", 
-  
-  // Billetera #1 de tu consola Hardhat
-  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8": "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-};
+const BILLETERA_MAESTRA = process.env.BILLETERA_MAESTRA_USDT || "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
 export const GET: APIRoute = async () => {
   try {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     
+    // 1. EXTRAEMOS LA CLAVE PRIVADA AUTOMÁTICAMENTE DESDE SUPABASE
+    // (Asegúrate de que el nombre de la columna sea exactamente 'private_key' como en tu tabla)
     const { data: billeteras, error: dbError } = await supabase
       .from('billeteras_deposito')
-      .select('usuario_id, direccion_publica');
+      .select('usuario_id, direccion_publica, private_key'); 
 
     if (dbError) throw dbError;
     if (!billeteras || billeteras.length === 0) {
@@ -59,7 +50,6 @@ export const GET: APIRoute = async () => {
         error: null as string | null
       };
 
-      // Si se detectan fondos, procesamos acreditación y posterior barrido
       if (balanceSimulado > 0) {
         try {
           const { data: perfil } = await supabase
@@ -70,34 +60,28 @@ export const GET: APIRoute = async () => {
 
           const nuevoBalanceVirtual = (perfil?.balance_virtual || 0) + balanceSimulado;
 
-          // 1. Convertimos la dirección al formato Checksum oficial (con mayúsculas/minúsculas correctas)
-          const direccionChecksum = ethers.getAddress(direccionNormalizada);
-          const clavePrivada = CLAVES_PRIVADAS_LOCALES[direccionChecksum];
+          // 2. LA CLAVE PRIVADA SE TOMA DEL REGISTRO EXTRAÍDO DE LA BASE DE DATOS
+          const clavePrivada = wallet.private_key;
 
           if (!clavePrivada) {
-            throw new Error(`Clave privada no encontrada en el servidor para la billetera mapeada: ${direccionChecksum}`);
+            throw new Error(`La billetera ${direccionNormalizada} no tiene una clave privada registrada en Supabase.`);
           }
 
-          // 2. Conectamos al firmante (Wallet)
+          // 3. Conectamos al firmante usando la llave recuperada dinámicamente
           const walletFirmante = new ethers.Wallet(clavePrivada, provider);
           
-          // Obtenemos el balance crudo actual directo de la blockchain
           const balanceCrudo = await provider.getBalance(direccionNormalizada);
-          
-          // Fijamos valores de gas estándar y económicos para el nodo de desarrollo local
           const gasPrice = await provider.getFeeData().then(f => f.gasPrice || ethers.parseUnits("20", "gwei"));
           const gasLimit = 21000n; 
           const costoGas = gasPrice * gasLimit;
 
-          // Verificación matemática segura usando BigInt
           if (balanceCrudo <= costoGas) {
-            throw new Error(`Fondos insuficientes para cubrir el gas. Balance: ${ethers.formatEther(balanceCrudo)} ETH, Gas Necesario: ${ethers.formatEther(costoGas)} ETH`);
+            throw new Error(`Gas insuficiente.`);
           }
 
-          // Restamos el costo exacto del gas para vaciar la cuenta por completo
           const montoAEnviar = balanceCrudo - costoGas;
 
-          // 3. Ejecutamos el barrido real mandando todo el remanente neto
+          // 4. Se ejecuta el barrido automático
           const txBarrido = await walletFirmante.sendTransaction({
             to: BILLETERA_MAESTRA,
             value: montoAEnviar,
@@ -105,18 +89,14 @@ export const GET: APIRoute = async () => {
             gasPrice: gasPrice
           });
 
-          // Esperamos 1 confirmación del bloque local
           const reciboTx = await txBarrido.wait();
 
-          // 4. SOLO SI LA BLOCKCHAIN COMPLETÓ EL RETIRO, actualizamos la base de datos
           if (reciboTx && reciboTx.status === 1) {
-            // A. Incrementamos el balance virtual del usuario en perfiles
             await supabase
               .from('perfiles')
               .update({ balance_virtual: nuevoBalanceVirtual })
               .eq('id', wallet.usuario_id);
 
-            // B. Registramos en transacciones usando el hash blockchain real
             await supabase
               .from('transacciones')
               .insert({
@@ -133,7 +113,7 @@ export const GET: APIRoute = async () => {
           }
 
         } catch (errorSupabase: any) {
-          console.error(`❌ Error en flujo de barrido para ${wallet.usuario_id}:`, errorSupabase.message);
+          console.error(`❌ Error en flujo automatizado para ${wallet.usuario_id}:`, errorSupabase.message);
           registro.error = errorSupabase.message;
         }
       }
@@ -144,7 +124,7 @@ export const GET: APIRoute = async () => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Escaneo y barrido automatizado finalizado.",
+        message: "Escaneo y barrido 100% automatizado finalizado.",
         resultados: detallesEscaneo 
       }), 
       { status: 200, headers: { "Content-Type": "application/json" } }
