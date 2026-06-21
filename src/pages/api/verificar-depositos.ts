@@ -22,16 +22,22 @@ const IV_LENGTH = 16; // Para AES, el vector de inicialización siempre es 16 by
  */
 function desencriptarClave(textoEncriptado: string): string {
   try {
-    // Si contiene dos puntos (:), significa que viene en formato cifrado IV:Texto
+    // Si no contiene el separador ':', asumimos que está en texto plano
     if (!textoEncriptado.includes(':')) {
-      return textoEncriptado; // Si no tiene ':', asumimos que está en texto plano
+      return textoEncriptado;
     }
 
     const partes = textoEncriptado.split(':');
     const iv = Buffer.from(partes.shift()!, 'hex');
     const textoCifradoOriginal = Buffer.from(partes.join(':'), 'hex');
     
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+    // 👑 Generamos un buffer seguro de exactamente 32 bytes usando el hash de tu ENCRYPTION_KEY
+    const keyBuffer = crypto
+      .createHash('sha256')
+      .update(ENCRYPTION_KEY)
+      .digest(); // Esto genera un Buffer de 32 bytes exactos de forma matemática
+    
+    const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, iv);
     let decrypted = decipher.update(textoCifradoOriginal);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     
