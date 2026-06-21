@@ -70,24 +70,22 @@ export const GET: APIRoute = async () => {
           console.error(`❌ Error actualizando perfil de ${wallet.usuario_id}:`, perfilError.message);
         }
 
-        // 2. Registramos la transacción con el campo correcto e inspección de errores
+       // 2. Registramos la transacción con un hash 100% único e irrepetible
         const { error: txError } = await supabase
           .from('transacciones')
           .insert({
             usuario_id: wallet.usuario_id,
             tipo: 'deposito',
-            monto: balanceSimulado,
+            monto_virtual: balanceSimulado,
             estado: 'completado',
-            hash_blockchain: `LOCAL_NODE_${Date.now()}` // 👈 Aseguramos que se llame exactamente hash_blockchain
+            hash_blockchain: `LOCAL_${wallet.usuario_id.slice(0, 5)}_${Date.now()}_${Math.floor(Math.random() * 1000)}` // 👈 Forzamos unicidad absoluta
           });
 
         if (txError) {
-          console.error(`❌ Error insertando transacción en Supabase:`, txError.message);
-          // Esto imprimirá en la consola de tu terminal el motivo exacto si la base de datos lo rechaza
+          console.error(`❌ Error real de Supabase insertando transacción:`, txError.message);
         } else {
           registro.acreditado = true;
         }
-      }
 
       detallesEscaneo.push(registro);
     }
