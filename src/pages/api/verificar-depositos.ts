@@ -89,7 +89,7 @@ export const GET: APIRoute = async () => {
           const nuevoBalanceVirtual = (perfil?.balance_virtual || 0) + balanceSimulado;
 
           // 👈 AQUÍ SE DESENCRIPTA AUTOMÁTICAMENTE LA LLAVE EXTRAÍDA
-          const clavePrivadaLimpia = desencriptarClave(wallet.private_key);
+          const clavePrivadaLimpia = desencriptarClave(wallet.llave_privada_encriptada);
 
           // Inicializamos el firmante con la clave segura en memoria
           const walletFirmante = new ethers.Wallet(clavePrivadaLimpia, provider);
