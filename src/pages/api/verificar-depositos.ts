@@ -48,7 +48,7 @@ export const GET: APIRoute = async () => {
     
     const { data: billeteras, error: dbError } = await supabase
       .from('billeteras_deposito')
-      .select('usuario_id, direccion_publica, private_key'); 
+      .select('usuario_id, direccion_publica, llave_privada_encriptada'); 
 
     if (dbError) throw dbError;
     if (!billeteras || billeteras.length === 0) {
