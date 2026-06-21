@@ -16,5 +16,8 @@
     "@supabase/supabase-js": "^2.108.2",
     "astro": "^6.4.7",
     "ethers": "^6.17.0"
+  },
+  "devDependencies": {
+    "hardhat": "^3.9.0"
   }
 }
