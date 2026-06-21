@@ -22,10 +22,9 @@ const IV_LENGTH = 16; // Para AES, el vector de inicialización siempre es 16 by
  */
 function desencriptarClave(textoEncriptado: string): string {
   try {
-    // Si la clave no está encriptada (es decir, pegaste la de Hardhat en texto plano para pruebas),
-    // la devolvemos tal cual para que no rompa tu flujo local.
-    if (textoEncriptado.startsWith('0x') && textoEncriptado.length === 66) {
-      return textoEncriptado;
+    // Si contiene dos puntos (:), significa que viene en formato cifrado IV:Texto
+    if (!textoEncriptado.includes(':')) {
+      return textoEncriptado; // Si no tiene ':', asumimos que está en texto plano
     }
 
     const partes = textoEncriptado.split(':');
