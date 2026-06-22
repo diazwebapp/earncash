@@ -306,18 +306,7 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
           btn.innerText = "Solicitar Retiro";
         }
       });
-  </script>
-
-  <script>
-    // 1. Importamos la función para crear el cliente de Supabase en el cliente
-    import { createClient } from "@supabase/supabase-js";
-
-    // 2. Inicializamos el cliente usando las variables de entorno públicas
-    // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
-    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-
-    const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
+  
 
     async function cargarInterfazDeposito() {
       const addressText = document.getElementById("deposit-address-text");
