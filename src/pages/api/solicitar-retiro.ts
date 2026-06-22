@@ -17,19 +17,33 @@ const USDT_ABI = [
     "type": "function"
   }
 ] as const;
+// Inicializar Supabase con privilegios de Servidor
+    const supabaseUrl = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { usuarioId, address, amount } = await request.json();
+
+    
+
+    const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session) {
+          console.log("No hay sesión activa")
+          return new Response(JSON.stringify({ error: 'usuario no logueado.' }), { status: 401 });
+        }
+        
+        const usuarioId = session.user.id;
+    const { address, amount } = await request.json();
 
     if (!usuarioId || !address || !amount || amount <= 0) {
       return new Response(JSON.stringify({ error: 'Datos de retiro inválidos.' }), { status: 400 });
     }
 
-    // Inicializar Supabase con privilegios de Servidor
-    const supabaseUrl = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
 
     // 1. Obtener el balance actual del usuario desde Supabase
     const { data: perfil, error: perfilError } = await supabase
