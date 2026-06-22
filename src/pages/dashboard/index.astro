@@ -320,27 +320,29 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
       const walletAddress = walletData.direccion_publica;
       addressText.innerText = walletAddress;
 
-// Consultamos el balance del cliente
-      const { data: balance_, error: balanceError} = await supabaseCliente
-        .from('perfiles')
-        .select('balance_virtual')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      // Consultamos el balance del cliente
+const { data: perfil, error: balanceError } = await supabaseCliente
+  .from('perfiles')
+  .select('balance_virtual')
+  .eq('id', session.user.id)
+  .maybeSingle();
 
-        if (balanceError) {
-                console.error("Error de Supabase:", error);
-                balance_virtual_html.innerText = "Error al conectar con el servidor.";
-                return;
-              }
-        if(!balance_){
-          console.error("Error de Supabase")
-          balance_virtual_html.innerText = "no hay balance";
-          return;
-        }
-        
-        balance_virtual_html.innerText = balance_.balance_virtual;
+if (balanceError) {
+  console.error("Error de Supabase:", balanceError);
+  balance_virtual_html.innerText = "Error al conectar con el servidor.";
+  return;
+}
 
+// Validamos si el registro existe Y si tiene la propiedad balance_virtual
+if (!perfil || perfil.balance_virtual === null === undefined) {
+  console.error("No se encontró el perfil o el balance está vacío");
+  balance_virtual_html.innerText = "no hay balance";
+  return;
+}
 
+// Si todo está correcto, asignamos el valor numérico formateado
+const balanceNumerico = parseFloat(perfil.balance_virtual);
+balance_virtual_html.innerText = `${balanceNumerico.toFixed(2)} USDT`;
       // 5. Generamos el QR
 
       qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
