@@ -23,10 +23,7 @@ const USDT_ABI = [
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export const POST: APIRoute = async ({ request }) => {
-  try {
-
-    
-
+ 
     /* const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -123,8 +120,4 @@ export const POST: APIRoute = async ({ request }) => {
 
     return new Response(JSON.stringify({ success: true, nuevoSaldo, txHash }), { status: 200 });
 
-  } catch (error: any) {
-    console.error("❌ Error en solicitud de retiro:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-  }
 };
