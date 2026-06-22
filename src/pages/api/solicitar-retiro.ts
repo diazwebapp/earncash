@@ -32,8 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
         } = await supabase.auth.getSession();
 
         if (!session) {
-          console.log("No hay sesión activa")
-          return new Response(JSON.stringify({ error: 'usuario no logueado.' }), { status: 401 });
+          return new Response(JSON.stringify({ error: 'usuario no logueado.', supabaseUrl, supabaseServiceKey}), { status: 401 });
         }
         
         const usuarioId = session.user.id;
