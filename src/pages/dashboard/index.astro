@@ -324,7 +324,7 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
       const { data: balance_, error: balanceError} = await supabaseCliente
         .from('perfiles')
         .select('balance_virtual')
-        .eq('usuario_id', session.user.id)
+        .eq('id', session.user.id)
         .maybeSingle();
 
         if (balanceError) {
