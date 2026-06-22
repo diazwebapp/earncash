@@ -235,23 +235,7 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
       text-align: center;
     }
   </style>
-  <script type="module" >
-     // 1. Importamos la función para crear el cliente de Supabase en el cliente
-    import { createClient } from "@supabase/supabase-js";
-
-    // 2. Inicializamos el cliente usando las variables de entorno públicas
-    // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
-    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-
-    const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
-     const {
-          data: { session },
-        } = await supabaseCliente.auth.getSession();
-        if (!session) {
-          return;
-        }
-        
+  <script>
     // Lógica para enviar la solicitud de retiro
     document
       .getElementById("form-withdrawal")
@@ -279,7 +263,7 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
 
         try {
           // Pasamos de ejemplo el id del usuario simulado (luego se extrae de la sesión)
-          const usuarioId = session.user.id; // Coloca el ID de tu tabla perfiles para probar
+          const usuarioId = "ac585a84-d6ab-4f13-a5d2-df7557f8ddcb"; // Coloca el ID de tu tabla perfiles para probar
 
           const response = await fetch("/api/solicitar-retiro", {
             method: "POST",
@@ -306,7 +290,18 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
           btn.innerText = "Solicitar Retiro";
         }
       });
-  
+  </script>
+
+  <script>
+    // 1. Importamos la función para crear el cliente de Supabase en el cliente
+    import { createClient } from "@supabase/supabase-js";
+
+    // 2. Inicializamos el cliente usando las variables de entorno públicas
+    // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+    const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
 
     async function cargarInterfazDeposito() {
       const addressText = document.getElementById("deposit-address-text");
@@ -371,7 +366,7 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
         }
 
         // Validamos si el registro existe Y si tiene la propiedad balance_virtual
-        if (!perfil || (perfil.balance_virtual === null) ) {
+        if (!perfil || (perfil.balance_virtual === null) === undefined) {
           console.error("No se encontró el perfil o el balance está vacío");
           balance_virtual_html.innerText = "no hay balance";
           return;
