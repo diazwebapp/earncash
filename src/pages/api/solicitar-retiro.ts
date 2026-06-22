@@ -32,6 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
         } = await supabase.auth.getSession();
 
         if (!session) {
+          console.log("supabase-url: ",supabaseUrl, "supabase-key: ",supabaseServiceKey)
           return new Response(JSON.stringify({ error: 'usuario no logueado.', supabaseUrl, supabaseServiceKey}), { status: 401 });
         }
         
