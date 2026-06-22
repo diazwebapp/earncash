@@ -1,15 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { ethers } from 'ethers';
-import CryptoJS from 'crypto-js'; // 👈 Cambiamos a crypto-js
-
-// Traemos tu llave secreta del .env sin alterar
-const ENCRYPTION_KEY = import.meta.env.ENCRYPTION_KEY;
-
-function encrypt(text: string): string {
-  // Encripta de forma directa y limpia retornando una string segura
-  return CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
-}
+import { encrypt } from '../../libs/encript';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
