@@ -245,6 +245,12 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
     const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
     const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
+
+    // 3. Usamos la instancia local 'supabaseCliente' para obtener la sesión
+        const {
+          data: { session },
+        } = await supabaseCliente.auth.getSession();
+        
     // Lógica para enviar la solicitud de retiro
     document
       .getElementById("form-withdrawal")
@@ -271,9 +277,16 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
         msgBox.innerText = "";
 
         try {
+          
           // Pasamos de ejemplo el id del usuario simulado (luego se extrae de la sesión)
-          const usuarioId = "ac585a84-d6ab-4f13-a5d2-df7557f8ddcb"; // Coloca el ID de tu tabla perfiles para probar
-
+          
+        if (!session) {
+          console.log("No hay sesión activa")
+          return;
+        }
+        
+          const usuarioId = session.user.id;
+        
           const response = await fetch("/api/solicitar-retiro", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -314,10 +327,6 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
         return;
 
       try {
-        // 3. Usamos la instancia local 'supabaseCliente' para obtener la sesión
-        const {
-          data: { session },
-        } = await supabaseCliente.auth.getSession();
         if (!session) {
           addressText.innerText = "Inicia sesión para ver tu dirección.";
           return;
