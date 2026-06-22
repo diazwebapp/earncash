@@ -289,8 +289,9 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
         
           const response = await fetch("/api/solicitar-retiro", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json"},
             body: JSON.stringify({ usuarioId, address, amount }),
+            credentials: 'include'
           });
 
           const resData = await response.json();
