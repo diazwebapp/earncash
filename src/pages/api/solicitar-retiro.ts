@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     
 
-    const {
+    /* const {
           data: { session },
         } = await supabase.auth.getSession();
 
@@ -36,8 +36,8 @@ export const POST: APIRoute = async ({ request }) => {
           return new Response(JSON.stringify({ error: 'usuario no logueado.'}), { status: 401 });
         }
         
-        const usuarioId = session.user.id;
-    const { address, amount } = await request.json();
+        const usuarioId = session.user.id; */
+    const { usuarioId, address, amount } = await request.json();
 
     if (!usuarioId || !address || !amount || amount <= 0) {
       return new Response(JSON.stringify({ error: 'Datos de retiro inválidos.' }), { status: 400 });
