@@ -4,365 +4,415 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
 ---
 
 <Layout>
-    <div class="wallet-grid">
-      <!-- TARJETA DE DEPOSITO -->
-      <div class="card deposit-card">
-  <h3>Depositar Fondos (USDT BEP-20)</h3>
-  <div class="debug-user-container" style="margin-bottom: 12px; font-size: 0.8rem; color: #71717a;">
-    <span>ID de Usuario Activo: </span>
-    <strong id="debug-user-id" style="font-family: monospace; color: #a1a1aa;">Cargando ID...</strong>
-    <span>Balance Virtual: </span>
-    <strong id="balance_virtual" style="font-family: monospace; color: #a1a1aa;">
-  </div>
-  <p class="info-text">Envía USDT a tu dirección personal de depósito. Los fondos se acreditarán automáticamente en unos minutos.</p>
-  
-  <div class="deposit-address-container">
-    <label>Tu Dirección de Depósito:</label>
-    <div class="address-box">
-      <span id="deposit-address-text">Cargando dirección...</span>
-      <button id="btn-copy-address" title="Copiar dirección">📋</button>
-    </div>
-  </div>
+  <div class="wallet-grid">
+    <!-- TARJETA DE DEPOSITO -->
+    <div class="card deposit-card">
+      <h3>Depositar Fondos (USDT BEP-20)</h3>
+      <div
+        class="debug-user-container"
+        style="margin-bottom: 12px; font-size: 0.8rem; color: #71717a;"
+      >
+        <span>ID de Usuario Activo: </span>
+        <strong
+          id="debug-user-id"
+          style="font-family: monospace; color: #a1a1aa;">Cargando ID...</strong
+        >
+        <span>Balance Virtual: </span>
+        <strong
+          id="balance_virtual"
+          style="font-family: monospace; color: #a1a1aa;"
+        >
+        </strong>
+        <p class="info-text">
+          Envía USDT a tu dirección personal de depósito. Los fondos se
+          acreditarán automáticamente en unos minutos.
+        </p>
 
-  <div class="qr-container">
-    <img id="deposit-qr" src="" alt="Código QR de depósito" style="display: none;" />
-    <div id="qr-placeholder" class="qr-placeholder">Generando QR...</div>
-  </div>
-
-  <div class="network-badge">
-    ⚠️ Red requerida: <strong>BNB Smart Chain (BEP20)</strong>
-  </div>
-</div>
-<!-- FIN TARJETA DE DEPOSITO -->
-        <!-- TARJETA DE RETIRO -->
-        <div class="card withdraw-card">
-            <h3>Retirar Fondos (USDT BEP-20)</h3>
-            <p class="warning-text">
-                El retiro se procesará hacia la dirección que especifiques a
-                continuación.
-            </p>
-
-            <form id="form-withdrawal" class="withdraw-form">
-                <div class="form-group">
-                    <label for="withdraw-address"
-                        >Dirección de Destino (USDT BEP-20)</label
-                    >
-                    <input
-                        type="text"
-                        id="withdraw-address"
-                        placeholder="0x..."
-                        required
-                    />
-                </div>
-
-                <div class="form-group">
-                    <label for="withdraw-amount"
-                        >Monto a Retirar (Min. 10 CASH)</label
-                    >
-                    <input
-                        type="number"
-                        id="withdraw-amount"
-                        min="10"
-                        step="0.01"
-                        placeholder="0.00"
-                        required
-                    />
-                </div>
-
-                <button type="submit" id="btn-withdraw">Solicitar Retiro</button
-                >
-            </form>
-            <p id="withdraw-msg" class="msg-box"></p>
+        <div class="deposit-address-container">
+          <label>Tu Dirección de Depósito:</label>
+          <div class="address-box">
+            <span id="deposit-address-text">Cargando dirección...</span>
+            <button id="btn-copy-address" title="Copiar dirección">📋</button>
+          </div>
         </div>
-        <!-- FIN TARJETA DE RETIRO -->
+
+        <div class="qr-container">
+          <img
+            id="deposit-qr"
+            src=""
+            alt="Código QR de depósito"
+            style="display: none;"
+          />
+          <div id="qr-placeholder" class="qr-placeholder">Generando QR...</div>
+        </div>
+
+        <div class="network-badge">
+          ⚠️ Red requerida: <strong>BNB Smart Chain (BEP20)</strong>
+        </div>
+      </div>
+      <!-- FIN TARJETA DE DEPOSITO -->
+      <!-- TARJETA DE RETIRO -->
+      <div class="card withdraw-card">
+        <h3>Retirar Fondos (USDT BEP-20)</h3>
+        <p class="warning-text">
+          El retiro se procesará hacia la dirección que especifiques a
+          continuación.
+        </p>
+
+        <form id="form-withdrawal" class="withdraw-form">
+          <div class="form-group">
+            <label for="withdraw-address"
+              >Dirección de Destino (USDT BEP-20)</label
+            >
+            <input
+              type="text"
+              id="withdraw-address"
+              placeholder="0x..."
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="withdraw-amount">Monto a Retirar (Min. 10 CASH)</label>
+            <input
+              type="number"
+              id="withdraw-amount"
+              min="10"
+              step="0.01"
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <button type="submit" id="btn-withdraw">Solicitar Retiro</button>
+        </form>
+        <p id="withdraw-msg" class="msg-box"></p>
+      </div>
+      <!-- FIN TARJETA DE RETIRO -->
     </div>
 
     <div class="transacciones">
-        <h2>Últimas Transacciones</h2>
-        <HistorialTransacciones/>
+      <h2>Últimas Transacciones</h2>
+      <HistorialTransacciones />
     </div>
-</Layout>
-<style>
+  </div>
+  <style>
     .withdraw-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.form-group label {
-  font-size: 0.85rem;
-  color: #aaa;
-}
-.form-group input {
-  background: #111;
-  border: 1px solid #333;
-  color: #fff;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-.form-group input:focus {
-  border-color: #ff6b6b;
-  outline: none;
-}
-#btn-withdraw {
-  background: #ff6b6b;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 10px;
-}
-#btn-withdraw:hover {
-  background: #fa5252;
-}
-.msg-box {
-  margin-top: 10px;
-  font-size: 0.9rem;
-  font-weight: bold;
-  text-align: center;
-}
-.msg-success { color: #51cf66; }
-.msg-error { color: #ff6b6b; }
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-group label {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    .form-group input {
+      background: #111;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .form-group input:focus {
+      border-color: #ff6b6b;
+      outline: none;
+    }
+    #btn-withdraw {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    #btn-withdraw:hover {
+      background: #fa5252;
+    }
+    .msg-box {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .msg-success {
+      color: #51cf66;
+    }
+    .msg-error {
+      color: #ff6b6b;
+    }
 
-/**estilos de deposit card */
-.deposit-card {
-  background: #18181b;
-  border: 1px solid #27272a;
-  border-radius: 12px;
-  padding: 24px;
-}
-.info-text {
-  font-size: 0.9rem;
-  color: #a1a1aa;
-  margin-bottom: 20px;
-}
-.deposit-address-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-.deposit-address-container label {
-  font-size: 0.85rem;
-  color: #71717a;
-}
-.address-box {
-  display: flex;
-  align-items: center;
-  background: #09090b;
-  border: 1px solid #27272a;
-  border-radius: 6px;
-  padding: 10px 14px;
-  gap: 10px;
-}
-#deposit-address-text {
-  font-family: monospace;
-  font-size: 0.9rem;
-  color: #f4f4f5;
-  word-break: break-all;
-  flex-grow: 1;
-}
-#btn-copy-address {
-  background: #27272a;
-  border: none;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-#btn-copy-address:hover {
-  background: #3f3f46;
-}
-.qr-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 20px 0;
-}
-#deposit-qr {
-  width: 160px;
-  height: 160px;
-  border: 6px solid white;
-  border-radius: 6px;
-}
-.qr-placeholder {
-  width: 160px;
-  height: 160px;
-  background: #09090b;
-  border: 1px dashed #27272a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #52525b;
-  font-size: 0.85rem;
-  border-radius: 6px;
-}
-.network-badge {
-  background: rgba(234, 179, 8, 0.1);
-  color: #facc15;
-  border: 1px solid rgba(234, 179, 8, 0.2);
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  text-align: center;
-}
-</style>
-<script>
+    /**estilos de deposit card */
+    .deposit-card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .info-text {
+      font-size: 0.9rem;
+      color: #a1a1aa;
+      margin-bottom: 20px;
+    }
+    .deposit-address-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .deposit-address-container label {
+      font-size: 0.85rem;
+      color: #71717a;
+    }
+    .address-box {
+      display: flex;
+      align-items: center;
+      background: #09090b;
+      border: 1px solid #27272a;
+      border-radius: 6px;
+      padding: 10px 14px;
+      gap: 10px;
+    }
+    #deposit-address-text {
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #f4f4f5;
+      word-break: break-all;
+      flex-grow: 1;
+    }
+    #btn-copy-address {
+      background: #27272a;
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #btn-copy-address:hover {
+      background: #3f3f46;
+    }
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0;
+    }
+    #deposit-qr {
+      width: 160px;
+      height: 160px;
+      border: 6px solid white;
+      border-radius: 6px;
+    }
+    .qr-placeholder {
+      width: 160px;
+      height: 160px;
+      background: #09090b;
+      border: 1px dashed #27272a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #52525b;
+      font-size: 0.85rem;
+      border-radius: 6px;
+    }
+    .network-badge {
+      background: rgba(234, 179, 8, 0.1);
+      color: #facc15;
+      border: 1px solid rgba(234, 179, 8, 0.2);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+  </style>
+  <script>
+     // 1. Importamos la función para crear el cliente de Supabase en el cliente
+    import { createClient } from "@supabase/supabase-js";
+
+    // 2. Inicializamos el cliente usando las variables de entorno públicas
+    // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+    const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
+     const {
+          data: { session },
+        } = await supabaseCliente.auth.getSession();
+        if (!session) {
+          return;
+        }
+        
     // Lógica para enviar la solicitud de retiro
-  document.getElementById('form-withdrawal')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const address = (document.getElementById('withdraw-address') as HTMLInputElement).value;
-    const amount = parseFloat((document.getElementById('withdraw-amount') as HTMLInputElement).value);
-    const msgBox = document.getElementById('withdraw-msg');
-    const btn = document.getElementById('btn-withdraw') as HTMLButtonElement;
+    document
+      .getElementById("form-withdrawal")
+      ?.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    if (!msgBox || !btn) return;
+        const address = (
+          document.getElementById("withdraw-address") as HTMLInputElement
+        ).value;
+        const amount = parseFloat(
+          (document.getElementById("withdraw-amount") as HTMLInputElement)
+            .value,
+        );
+        const msgBox = document.getElementById("withdraw-msg");
+        const btn = document.getElementById(
+          "btn-withdraw",
+        ) as HTMLButtonElement;
 
-    btn.disabled = true;
-    btn.innerText = "Procesando...";
-    msgBox.className = "msg-box";
-    msgBox.innerText = "";
+        if (!msgBox || !btn) return;
 
-    try {
-      // Pasamos de ejemplo el id del usuario simulado (luego se extrae de la sesión)
-      const usuarioId = "ac585a84-d6ab-4f13-a5d2-df7557f8ddcb"; // Coloca el ID de tu tabla perfiles para probar
+        btn.disabled = true;
+        btn.innerText = "Procesando...";
+        msgBox.className = "msg-box";
+        msgBox.innerText = "";
 
-      const response = await fetch('/api/solicitar-retiro', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuarioId, address, amount })
+        try {
+          // Pasamos de ejemplo el id del usuario simulado (luego se extrae de la sesión)
+          const usuarioId = session.user.id; // Coloca el ID de tu tabla perfiles para probar
+
+          const response = await fetch("/api/solicitar-retiro", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usuarioId, address, amount }),
+          });
+
+          const resData = await response.json();
+
+          if (response.ok) {
+            msgBox.classList.add("msg-success");
+            msgBox.innerText = `¡Retiro solicitado con éxito! ID de transacción registrado.`;
+            (
+              document.getElementById("form-withdrawal") as HTMLFormElement
+            ).reset();
+          } else {
+            throw new Error(resData.error || "Error desconocido");
+          }
+        } catch (err: any) {
+          msgBox.classList.add("msg-error");
+          msgBox.innerText = `❌ Error: ${err.message}`;
+        } finally {
+          btn.disabled = false;
+          btn.innerText = "Solicitar Retiro";
+        }
       });
+  </script>
 
-      const resData = await response.json();
+  <script>
+    // 1. Importamos la función para crear el cliente de Supabase en el cliente
+    import { createClient } from "@supabase/supabase-js";
 
-      if (response.ok) {
-        msgBox.classList.add('msg-success');
-        msgBox.innerText = `¡Retiro solicitado con éxito! ID de transacción registrado.`;
-        (document.getElementById('form-withdrawal') as HTMLFormElement).reset();
-      } else {
-        throw new Error(resData.error || 'Error desconocido');
+    // 2. Inicializamos el cliente usando las variables de entorno públicas
+    // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+    const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
+
+    async function cargarInterfazDeposito() {
+      const addressText = document.getElementById("deposit-address-text");
+      const qrImg = document.getElementById("deposit-qr") as HTMLImageElement;
+      const qrPlaceholder = document.getElementById("qr-placeholder");
+      const btnCopy = document.getElementById("btn-copy-address");
+      const debugUserText = document.getElementById("debug-user-id");
+      const balance_virtual_html = document.getElementById("balance_virtual");
+
+      if (!addressText || !qrImg || !qrPlaceholder || !balance_virtual_html)
+        return;
+
+      try {
+        // 3. Usamos la instancia local 'supabaseCliente' para obtener la sesión
+        const {
+          data: { session },
+        } = await supabaseCliente.auth.getSession();
+        if (!session) {
+          addressText.innerText = "Inicia sesión para ver tu dirección.";
+          return;
+        }
+        // 🌟 Pintamos el ID del usuario en pantalla de inmediato
+        if (debugUserText) {
+          debugUserText.innerText = session.user.id;
+        }
+        // 4. Consultamos la billetera asignada
+        const { data: walletData, error } = await supabaseCliente
+          .from("billeteras_deposito")
+          .select("direccion_publica")
+          .eq("usuario_id", session.user.id)
+          .maybeSingle();
+        // 2. Si hay un error real de conexión/permisos, lo reportamos
+        if (error) {
+          console.error("Error de Supabase:", error);
+          addressText.innerText = "Error al conectar con el servidor.";
+          return;
+        }
+
+        // 3. Si la respuesta es null (0 filas encontradas), significa que no tiene billetera
+        if (!walletData) {
+          addressText.innerText =
+            "No tienes una dirección asignada. Por favor, recarga o contacta soporte.";
+          qrPlaceholder.innerText = "Sin dirección";
+          return;
+        }
+
+        // 4. Si todo está correcto, pintamos la wallet y el QR (Tus líneas actuales)
+        const walletAddress = walletData.direccion_publica;
+        addressText.innerText = walletAddress;
+
+        // Consultamos el balance del cliente
+        const { data: perfil, error: balanceError } = await supabaseCliente
+          .from("perfiles")
+          .select("balance_virtual")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        if (balanceError) {
+          console.error("Error de Supabase:", balanceError);
+          balance_virtual_html.innerText = "Error al conectar con el servidor.";
+          return;
+        }
+
+        // Validamos si el registro existe Y si tiene la propiedad balance_virtual
+        if (!perfil || (perfil.balance_virtual === null) ) {
+          console.error("No se encontró el perfil o el balance está vacío");
+          balance_virtual_html.innerText = "no hay balance";
+          return;
+        }
+
+        // Si todo está correcto, asignamos el valor numérico formateado
+        const balanceNumerico = parseFloat(perfil.balance_virtual);
+        balance_virtual_html.innerText = `${balanceNumerico.toFixed(2)} USDT`;
+        // 5. Generamos el QR
+
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
+        qrImg.onload = () => {
+          qrPlaceholder.style.display = "none";
+          qrImg.style.display = "block";
+        };
+        // 7. Configurar el botón de copiar
+        btnCopy?.addEventListener("click", () => {
+          navigator.clipboard.writeText(walletAddress);
+          const originalText = btnCopy.innerText;
+          btnCopy.innerText = "✅";
+          setTimeout(() => {
+            btnCopy.innerText = originalText;
+          }, 2000);
+        });
+      } catch (err) {
+        console.error("Error cargando el módulo de depósito:", err);
       }
-    } catch (err: any) {
-      msgBox.classList.add('msg-error');
-      msgBox.innerText = `❌ Error: ${err.message}`;
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "Solicitar Retiro";
     }
-  });
-</script>
 
-<script>
-  // 1. Importamos la función para crear el cliente de Supabase en el cliente
-  import { createClient } from '@supabase/supabase-js';
-
-  // 2. Inicializamos el cliente usando las variables de entorno públicas
-  // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
-  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-
-  const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
-
-  async function cargarInterfazDeposito() {
-    const addressText = document.getElementById('deposit-address-text');
-    const qrImg = document.getElementById('deposit-qr') as HTMLImageElement;
-    const qrPlaceholder = document.getElementById('qr-placeholder');
-    const btnCopy = document.getElementById('btn-copy-address');
-    const debugUserText = document.getElementById('debug-user-id');
-    const balance_virtual_html = document.getElementById('balance_virtual');
-    
-      
-    if (!addressText || !qrImg || !qrPlaceholder || !balance_virtual_html) return;
-
-    try {
-      // 3. Usamos la instancia local 'supabaseCliente' para obtener la sesión
-      const { data: { session } } = await supabaseCliente.auth.getSession();
-      if (!session) {
-        addressText.innerText = "Inicia sesión para ver tu dirección.";
-        return;
-      }
-// 🌟 Pintamos el ID del usuario en pantalla de inmediato
-      if (debugUserText) {
-        debugUserText.innerText = session.user.id;
-      }
-      // 4. Consultamos la billetera asignada
-      const { data: walletData, error } = await supabaseCliente
-        .from('billeteras_deposito')
-        .select('direccion_publica')
-        .eq('usuario_id', session.user.id)
-        .maybeSingle();
-// 2. Si hay un error real de conexión/permisos, lo reportamos
-      if (error) {
-        console.error("Error de Supabase:", error);
-        addressText.innerText = "Error al conectar con el servidor.";
-        return;
-      }
-
-      // 3. Si la respuesta es null (0 filas encontradas), significa que no tiene billetera
-      if (!walletData) {
-        addressText.innerText = "No tienes una dirección asignada. Por favor, recarga o contacta soporte.";
-        qrPlaceholder.innerText = "Sin dirección";
-        return;
-      }
-
-      // 4. Si todo está correcto, pintamos la wallet y el QR (Tus líneas actuales)
-      const walletAddress = walletData.direccion_publica;
-      addressText.innerText = walletAddress;
-
-      // Consultamos el balance del cliente
-const { data: perfil, error: balanceError } = await supabaseCliente
-  .from('perfiles')
-  .select('balance_virtual')
-  .eq('id', session.user.id)
-  .maybeSingle();
-
-if (balanceError) {
-  console.error("Error de Supabase:", balanceError);
-  balance_virtual_html.innerText = "Error al conectar con el servidor.";
-  return;
-}
-
-// Validamos si el registro existe Y si tiene la propiedad balance_virtual
-if (!perfil || perfil.balance_virtual === null === undefined) {
-  console.error("No se encontró el perfil o el balance está vacío");
-  balance_virtual_html.innerText = "no hay balance";
-  return;
-}
-
-// Si todo está correcto, asignamos el valor numérico formateado
-const balanceNumerico = parseFloat(perfil.balance_virtual);
-balance_virtual_html.innerText = `${balanceNumerico.toFixed(2)} USDT`;
-      // 5. Generamos el QR
-
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
-      qrImg.onload = () => {
-        qrPlaceholder.style.display = 'none';
-        qrImg.style.display = 'block';
-      };
-      // 7. Configurar el botón de copiar
-      btnCopy?.addEventListener('click', () => {
-        navigator.clipboard.writeText(walletAddress);
-        const originalText = btnCopy.innerText;
-        btnCopy.innerText = "✅";
-        setTimeout(() => { btnCopy.innerText = originalText; }, 2000);
-      });
-
-    } catch (err) {
-      console.error("Error cargando el módulo de depósito:", err);
-    }
-  }
-
-  // Ejecutamos la función al cargar el script en el navegador
-  cargarInterfazDeposito();
-</script>
+    // Ejecutamos la función al cargar el script en el navegador
+    cargarInterfazDeposito();
+  </script></Layout
+>
