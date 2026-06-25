@@ -62,7 +62,8 @@
 	}
 	
 	button{
-		background: linear-gradient(135deg, var(--secondary), var(--primary)); /* Degradado Oro */
+		//background: linear-gradient(135deg, var(--secondary), var(--primary)); /* Degradado Oro */
+		background-color: var(--light);
 		color: var(--dark); /* Texto oscuro para contraste */
 		font-size: 1rem;
 		font-weight: bold;
@@ -80,7 +81,25 @@
 		height:max-content;
 		width:max-content;
 	}
-	button:active{
+	.btn{
+		background-color: var(--light);
+		height:max-content;
+		width:max-content;
+		font-size: 1rem;
+		font-weight: bold;
+		padding: 16px;
+		border: none;
+		border-radius: 12px; /* Bordes suaves modernos */
+		cursor: pointer;
+		box-shadow: 0 4px 15px rgba(240, 165, 0, 0.3); /* Brillo sutil inferior */
+		transition: transform 0.2s;
+		display:flex;
+		flex-flow: row nowrap;
+		justify-content:center;
+		align-items:center;
+		gap:.5rem;
+	}
+	button:active, .btn:active{
 		transform: scale(0.98);
 	}
 	.overlay {

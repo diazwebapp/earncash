@@ -112,7 +112,7 @@ export const POST: APIRoute = async ({ request }) => {
         usuario_id: usuarioId,
         monto_virtual: amount,
         tipo: 'retiro',
-        estado: 'completado', // Ya no queda pendiente, se liquida de inmediato
+        estado: 'pendiente', 
         hash_blockchain: txHash, 
       });
 

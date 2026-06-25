@@ -1,0 +1,294 @@
+---
+
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width user-scalable=no initial-scale=1.0 maximum-scale=1.0 minimum-scale=1.0" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+
+		<!-- Open Graph / Facebook / WhatsApp -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://tu-dominio.com/" />
+		<meta property="og:title" content="EarnCash - Gana dinero en línea" />
+		<meta property="og:description" content="Descripción breve y atractiva de tu sitio web para redes sociales y WhatsApp." />
+		<meta property="og:image" content="https://tu-dominio.com/og-image.jpg" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630"/>
+		
+		<!-- Twitter / X -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="EarnCash - Gana dinero en línea" />
+		<meta name="twitter:description" content="Descripción breve y atractiva de tu sitio web para redes sociales y WhatsApp." />
+		<meta name="twitter:image" content="https://tu-dominio.com/og-image.jpg" />
+	</head>
+	<body>
+		<main>
+			<slot></slot>
+		</main>
+	</body>
+</html>
+<style is:global >
+  /* Variables basadas en el diseño Material Design de Google */
+  :root {
+    --color-primary: #0b57d0;
+    --color-text: #1f1f1f;
+    --color-subtext: #444746;
+    --color-border: #747775;
+    --color-border-focused: #0b57d0;
+    --font-family: 'Roboto', arial, sans-serif;
+  }
+
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f4f9;
+    font-family: var(--font-family);
+    color: var(--color-text);
+  }
+
+  .login-box {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 964px;
+    min-height: 360px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+  }
+
+  .logo-container {
+    margin-bottom: 16px;
+  }
+
+  /* Control de visibilidad de pasos */
+  .step-content {
+    display: none;
+    width: 100%;
+  }
+  .left, .right{
+    width: 100%;
+  }
+  .step-content.active {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap:1rem;
+    animation: fadeIn 0.4s ease forwards;
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0 0 8px 0;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--color-subtext);
+    line-height: 1.5;
+    margin-bottom: 32px;
+  }
+
+  /* Inputs animados estilo Google Material Design */
+  .input-group {
+    position: relative;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 16px;
+    outline: none;
+    background: transparent;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+
+  .input-group input:focus {
+    border: 2px solid var(--color-border-focused);
+    padding: 15px; /* Compensa el cambio de grosor del borde */
+  }
+
+  .input-group label {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fff;
+    padding: 0 4px;
+    color: var(--color-subtext);
+    transition: 0.2s ease all;
+    pointer-events: none;
+    font-size: 16px;
+  }
+
+  /* Comportamiento del Label Flotante */
+  .input-group input:focus ~ label,
+  .input-group input:not(:placeholder-shown) ~ label {
+    top: 0;
+    font-size: 12px;
+    color: var(--color-border-focused);
+  }
+
+  .forgot-link {
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .forgot-link:hover {
+    text-decoration: underline;
+  }
+
+  .guest-mode {
+    font-size: 14px;
+    color: var(--color-subtext);
+    line-height: 1.5;
+    margin-bottom: 32px;
+  }
+
+  .guest-mode a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  /* Footer de Acciones */
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+
+  .create-account {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0 24px;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: #1b66db;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+  }
+
+  /* Estilos específicos de la pantalla de contraseña */
+  .user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    padding-right:12px;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    font-size: 14px;
+    margin-bottom: 24px;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .user-badge span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .show-password-container {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .checkbox-label input {
+    display: none;
+  }
+
+  .custom-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-subtext);
+    border-radius: 2px;
+    margin-right: 12px;
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .checkbox-label input:checked + .custom-checkbox {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .checkbox-label input:checked + .custom-checkbox::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  /* Animación de entrada */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsivo para emular la vista mobile de tus capturas */
+  @media (max-width: 709px) {
+    .login-container {
+      background-color: #ffffff;
+      align-items: flex-start;
+	  width: 100%;
+    }
+    .login-box {
+      padding: 24px;
+      border-radius: 0;
+      max-width: 100%;
+    }
+    .step-content{
+      flex-direction: column;
+    }
+  }
+</style>

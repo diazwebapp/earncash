@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { encrypt, desencriptarClave } from '../../libs/encript';
-const pkey ="0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+const pkey ="0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6"
 export const GET: APIRoute = async () => {
   try {
     const llaveEncriptada = encrypt(pkey);
