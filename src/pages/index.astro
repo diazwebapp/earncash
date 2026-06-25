@@ -84,6 +84,10 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
-  // Ejecutar al cargar la página
+	// Ejecutar al cargar la página
+	if ('Notification' in window) {
+			Notification.requestPermission()
+		}
+      
   document.addEventListener('DOMContentLoaded', iniciarAuth);
 </script>
