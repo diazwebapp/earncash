@@ -152,7 +152,7 @@
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
       // 1. Conectar al canal de WebSockets de Supabase
     // 1. Conectar al canal de WebSockets de Supabase
-    const numbers = stepVerifi?.querySelectorAll(".message")
+    const numbers = document.querySelectorAll(".message")
     let mensaje = ""
         supabase
             .channel('cambios-en-mensajes')
