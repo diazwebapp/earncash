@@ -5,9 +5,17 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
 
 <Layout>
   <div class="wallet-grid">
-    <!-- TARJETA DE DEPOSITO -->
+    <div class="card selector-card" style="grid-column: 1 / -1; margin-bottom: -10px;">
+      <label for="global-network-select" style="font-weight: bold; color: #f4f4f5; display: block; margin-bottom: 8px;">
+        🌐 Selecciona la Red Blockchain:
+      </label>
+      <select id="global-network-select" class="styled-select">
+        <option value="">Cargando redes disponibles...</option>
+      </select>
+    </div>
+
     <div class="card deposit-card">
-      <h3>Depositar Fondos (USDT BEP-20)</h3>
+      <h3>Depositar Fondos (<span class="current-network-title">USDT</span>)</h3>
       <div
         class="debug-user-container"
         style="margin-bottom: 12px; font-size: 0.8rem; color: #71717a;"
@@ -46,57 +54,65 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
           <div id="qr-placeholder" class="qr-placeholder">Generando QR...</div>
         </div>
 
-        <div class="network-badge">
-          ⚠️ Red requerida: <strong>BNB Smart Chain (BEP20)</strong>
+        <div id="network-badge-alert" class="network-badge">
+          ⚠️ Red requerida: <strong id="current-badge-name">Selecciona una red</strong>
         </div>
       </div>
-      <!-- FIN TARJETA DE DEPOSITO -->
-      <!-- TARJETA DE RETIRO -->
-      <div class="card withdraw-card">
-        <h3>Retirar Fondos (USDT BEP-20)</h3>
-        <p class="warning-text">
-          El retiro se procesará hacia la dirección que especifiques a
-          continuación.
-        </p>
-
-        <form id="form-withdrawal" class="withdraw-form">
-          <div class="form-group">
-            <label for="withdraw-address"
-              >Dirección de Destino (USDT BEP-20)</label
-            >
-            <input
-              type="text"
-              id="withdraw-address"
-              placeholder="0x..."
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="withdraw-amount">Monto a Retirar (Min. 10 CASH)</label>
-            <input
-              type="number"
-              id="withdraw-amount"
-              min="10"
-              step="0.01"
-              placeholder="0.00"
-              required
-            />
-          </div>
-
-          <button type="submit" id="btn-withdraw">Solicitar Retiro</button>
-        </form>
-        <p id="withdraw-msg" class="msg-box"></p>
-      </div>
-      <!-- FIN TARJETA DE RETIRO -->
     </div>
+    <div class="card withdraw-card">
+      <h3>Retirar Fondos (<span class="current-network-title">USDT</span>)</h3>
+      <p class="warning-text">
+        El retiro se procesará de forma automática o manual según las reglas de la red seleccionada.
+      </p>
 
+      <form id="form-withdrawal" class="withdraw-form">
+        <div class="form-group">
+          <label for="withdraw-address">Dirección de Destino (EVM Wallet)</label>
+          <input
+            type="text"
+            id="withdraw-address"
+            placeholder="0x..."
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="withdraw-amount">Monto a Retirar (Min. 10 CASH)</label>
+          <input
+            type="number"
+            id="withdraw-amount"
+            min="10"
+            step="0.01"
+            placeholder="0.00"
+            required
+          />
+        </div>
+
+        <button type="submit" id="btn-withdraw">Solicitar Retiro</button>
+      </form>
+      <p id="withdraw-msg" class="msg-box"></p>
+    </div>
     <div class="transacciones">
       <h2>Últimas Transacciones</h2>
       <HistorialTransacciones />
     </div>
   </div>
+
   <style>
+    .styled-select {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid #27272a;
+      color: #fff;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .styled-select:focus {
+      border-color: #ff6b6b;
+      outline: none;
+    }
     .withdraw-form {
       display: flex;
       flex-direction: column;
@@ -151,14 +167,14 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
       color: #ff6b6b;
     }
 
-    /**estilos de deposit card */
-    .deposit-card {
+    /**estilos de deposit card y general cards */
+    .selector-card, .deposit-card, .withdraw-card {
       background: #18181b;
       border: 1px solid #27272a;
       border-radius: 12px;
       padding: 24px;
     }
-    .info-text {
+    .info-text, .warning-text {
       font-size: 0.9rem;
       color: #a1a1aa;
       margin-bottom: 20px;
@@ -235,177 +251,181 @@ import HistorialTransacciones from "../../components/HistorialTransacciones.astr
       text-align: center;
     }
   </style>
+
   <script>
-     // 1. Importamos la función para crear el cliente de Supabase en el cliente
     import { createClient } from "@supabase/supabase-js";
 
-    // 2. Inicializamos el cliente usando las variables de entorno públicas
-    // Nota: Asegúrate de que en tu archivo .env uses PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY
     const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-
     const supabaseCliente = createClient(supabaseUrl, supabaseAnonKey);
 
-    // 3. Usamos la instancia local 'supabaseCliente' para obtener la sesión
-        const {
-          data: { session },
-        } = await supabaseCliente.auth.getSession();
-        
-    // Lógica para enviar la solicitud de retiro
-    document
-      .getElementById("form-withdrawal")
-      ?.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    // Variables de control de UI
+    const networkSelect = document.getElementById("global-network-select") as HTMLSelectElement;
+    const badgeName = document.getElementById("current-badge-name");
+    const networkTitles = document.querySelectorAll(".current-network-title");
 
-        const address = (
-          document.getElementById("withdraw-address") as HTMLInputElement
-        ).value;
-        const amount = parseFloat(
-          (document.getElementById("withdraw-amount") as HTMLInputElement)
-            .value,
-        );
-        const msgBox = document.getElementById("withdraw-msg");
-        const btn = document.getElementById(
-          "btn-withdraw",
-        ) as HTMLButtonElement;
+    // Almacén local de redes mapeadas
+    let redesMapeadas: any[] = [];
 
-        if (!msgBox || !btn) return;
+    async function inicializarDashboard() {
+      // 1. Validamos la sesión del usuario
+      const { data: { session } } = await supabaseCliente.auth.getSession();
+      if (!session) {
+        const addressText = document.getElementById("deposit-address-text");
+        if (addressText) addressText.innerText = "Inicia sesión para ver tu información.";
+        return;
+      }
 
-        btn.disabled = true;
-        btn.innerText = "Procesando...";
-        msgBox.className = "msg-box";
-        msgBox.innerText = "";
+      // Pintamos el ID de usuario activo
+      const debugUserText = document.getElementById("debug-user-id");
+      if (debugUserText) debugUserText.innerText = session.user.id;
 
-        try {
-          
-          // Pasamos de ejemplo el id del usuario simulado (luego se extrae de la sesión)
-          
-        if (!session) {
-          console.log("sin logear")
-          return;
-        }
-        
-          const usuarioId = session.user.id;
-        
-          const response = await fetch("/api/solicitar-retiro", {
-            method: "POST",
-            headers: { "Content-Type": "application/json"},
-            body: JSON.stringify({ usuarioId, address, amount }),
-            credentials: 'include'
-          });
+      // 2. Cargamos las redes configuradas en Supabase (redes_config con RLS activo)
+      const { data: redes, error: redesError } = await supabaseCliente
+        .from("redes_config")
+        .select("nombre, slug")
+        .eq("activa", true);
 
-          const resData = await response.json();
+      if (redesError || !redes || redes.length === 0) {
+        console.error("Error al cargar redes configuradas:", redesError);
+        networkSelect.innerHTML = `<option value="">Error al cargar redes</option>`;
+        return;
+      }
 
-          if (response.ok) {
-            msgBox.classList.add("msg-success");
-            msgBox.innerText = `¡Retiro solicitado con éxito! ID de transacción registrado.`;
-            (
-              document.getElementById("form-withdrawal") as HTMLFormElement
-            ).reset();
-          } else {
-            throw new Error(resData.error || "Error desconocido");
-          }
-        } catch (err: any) {
-          msgBox.classList.add("msg-error");
-          msgBox.innerText = `❌ Error: ${err.message}`;
-        } finally {
-          btn.disabled = false;
-          btn.innerText = "Solicitar Retiro";
+      redesMapeadas = redes;
+
+      // 3. Poblamos el elemento select
+      networkSelect.innerHTML = redes.map((r, index) => 
+        `<option value="${r.slug}" ${index === 0 ? 'selected' : ''}>${r.nombre}</option>`
+      ).join("");
+
+      // 4. Escuchamos cambios del selector para actualizar la interfaz
+      networkSelect.addEventListener("change", () => {
+        const selectedSlug = networkSelect.value;
+        const redEncontrada = redesMapeadas.find(r => r.slug === selectedSlug);
+        if (redEncontrada) {
+          if (badgeName) badgeName.innerText = redEncontrada.nombre;
+          networkTitles.forEach(el => (el.innerHTML = `USDT - ${redEncontrada.nombre}`));
         }
       });
- 
-   
 
-    async function cargarInterfazDeposito() {
+      // Ejecutamos el primer trigger visual manual
+      if (badgeName) badgeName.innerText = redes[0].nombre;
+      networkTitles.forEach(el => (el.innerHTML = `USDT - ${redes[0].nombre}`));
+
+      // 5. Cargamos datos de balances y wallet de depósito
+      await cargarDatosBilletera(session.user.id);
+    }
+
+    async function cargarDatosBilletera(userId: string) {
       const addressText = document.getElementById("deposit-address-text");
       const qrImg = document.getElementById("deposit-qr") as HTMLImageElement;
       const qrPlaceholder = document.getElementById("qr-placeholder");
       const btnCopy = document.getElementById("btn-copy-address");
-      const debugUserText = document.getElementById("debug-user-id");
       const balance_virtual_html = document.getElementById("balance_virtual");
 
-      if (!addressText || !qrImg || !qrPlaceholder || !balance_virtual_html)
+      if (!addressText || !qrImg || !qrPlaceholder || !balance_virtual_html) return;
+
+      // Consultamos la dirección asignada
+      const { data: walletData, error: walletError } = await supabaseCliente
+        .from("billeteras_deposito")
+        .select("direccion_publica")
+        .eq("usuario_id", userId)
+        .maybeSingle();
+
+      if (walletError || !walletData) {
+        addressText.innerText = "No tienes una dirección asignada.";
+        qrPlaceholder.innerText = "Sin dirección";
         return;
-
-      try {
-        if (!session) {
-          addressText.innerText = "Inicia sesión para ver tu dirección.";
-          return;
-        }
-        // 🌟 Pintamos el ID del usuario en pantalla de inmediato
-        if (debugUserText) {
-          debugUserText.innerText = session.user.id;
-        }
-        // 4. Consultamos la billetera asignada
-        const { data: walletData, error } = await supabaseCliente
-          .from("billeteras_deposito")
-          .select("direccion_publica")
-          .eq("usuario_id", session.user.id)
-          .maybeSingle();
-        // 2. Si hay un error real de conexión/permisos, lo reportamos
-        if (error) {
-          console.error("Error de Supabase:", error);
-          addressText.innerText = "Error al conectar con el servidor.";
-          return;
-        }
-
-        // 3. Si la respuesta es null (0 filas encontradas), significa que no tiene billetera
-        if (!walletData) {
-          addressText.innerText =
-            "No tienes una dirección asignada. Por favor, recarga o contacta soporte.";
-          qrPlaceholder.innerText = "Sin dirección";
-          return;
-        }
-
-        // 4. Si todo está correcto, pintamos la wallet y el QR (Tus líneas actuales)
-        const walletAddress = walletData.direccion_publica;
-        addressText.innerText = walletAddress;
-
-        // Consultamos el balance del cliente
-        const { data: perfil, error: balanceError } = await supabaseCliente
-          .from("perfiles")
-          .select("balance_virtual")
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        if (balanceError) {
-          console.error("Error de Supabase:", balanceError);
-          balance_virtual_html.innerText = "Error al conectar con el servidor.";
-          return;
-        }
-
-        // Validamos si el registro existe Y si tiene la propiedad balance_virtual
-        if (!perfil || (perfil.balance_virtual === null) === undefined) {
-          console.error("No se encontró el perfil o el balance está vacío");
-          balance_virtual_html.innerText = "no hay balance";
-          return;
-        }
-
-        // Si todo está correcto, asignamos el valor numérico formateado
-        const balanceNumerico = parseFloat(perfil.balance_virtual);
-        balance_virtual_html.innerText = `${balanceNumerico.toFixed(2)} USDT`;
-        // 5. Generamos el QR
-
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
-        qrImg.onload = () => {
-          qrPlaceholder.style.display = "none";
-          qrImg.style.display = "block";
-        };
-        // 7. Configurar el botón de copiar
-        btnCopy?.addEventListener("click", () => {
-          navigator.clipboard.writeText(walletAddress);
-          const originalText = btnCopy.innerText;
-          btnCopy.innerText = "✅";
-          setTimeout(() => {
-            btnCopy.innerText = originalText;
-          }, 2000);
-        });
-      } catch (err) {
-        console.error("Error cargando el módulo de depósito:", err);
       }
+
+      const walletAddress = walletData.direccion_publica;
+      addressText.innerText = walletAddress;
+
+      // Generamos el QR de la Wallet EVM
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${walletAddress}`;
+      qrImg.onload = () => {
+        qrPlaceholder.style.display = "none";
+        qrImg.style.display = "block";
+      };
+
+      // Listener para el botón copiar
+      btnCopy?.addEventListener("click", () => {
+        navigator.clipboard.writeText(walletAddress);
+        const originalText = btnCopy.innerText;
+        btnCopy.innerText = "✅";
+        setTimeout(() => (btnCopy.innerText = originalText), 2000);
+      });
+
+      // Consultamos el balance virtual
+      const { data: perfil } = await supabaseCliente
+        .from("perfiles")
+        .select("balance_virtual")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const balanceNumerico = parseFloat(perfil?.balance_virtual || "0");
+      balance_virtual_html.innerText = `${balanceNumerico.toFixed(2)} USDT`;
     }
 
-    // Ejecutamos la función al cargar el script en el navegador
-    cargarInterfazDeposito();
-  </script></Layout
->
+    // Lógica para enviar la solicitud de retiro (POST)
+    document.getElementById("form-withdrawal")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const { data: { session } } = await supabaseCliente.auth.getSession();
+      if (!session) return;
+
+      const address = (document.getElementById("withdraw-address") as HTMLInputElement).value;
+      const amount = parseFloat((document.getElementById("withdraw-amount") as HTMLInputElement).value);
+      const redSlug = networkSelect.value; // Capturamos la red obligatoria del select global
+
+      const msgBox = document.getElementById("withdraw-msg");
+      const btn = document.getElementById("btn-withdraw") as HTMLButtonElement;
+
+      if (!msgBox || !btn || !redSlug) return;
+
+      btn.disabled = true;
+      btn.innerText = "Procesando...";
+      msgBox.className = "msg-box";
+      msgBox.innerText = "";
+
+      try {
+        const response = await fetch("/api/solicitar-retiro", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            usuarioId: session.user.id, 
+            address, 
+            amount, 
+            redSlug // Enviamos la red dinámicamente al backend
+          }),
+        });
+
+        const resData = await response.json();
+
+        if (response.ok) {
+          msgBox.classList.add("msg-success");
+          msgBox.innerText = `¡Retiro solicitado con éxito! Transacción procesada correctamente.`;
+          (document.getElementById("form-withdrawal") as HTMLFormElement).reset();
+          
+          // Refrescamos el balance virtual tras el descuento preventivo
+          const balance_virtual_html = document.getElementById("balance_virtual");
+          if (balance_virtual_html && resData.nuevoSaldo !== undefined) {
+            balance_virtual_html.innerText = `${parseFloat(resData.nuevoSaldo).toFixed(2)} USDT`;
+          }
+        } else {
+          throw new Error(resData.error || "Error desconocido");
+        }
+      } catch (err: any) {
+        msgBox.classList.add("msg-error");
+        msgBox.innerText = `❌ Error: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Solicitar Retiro";
+      }
+    });
+
+    // Arrancamos el flujo
+    inicializarDashboard();
+  </script>
+</Layout>
